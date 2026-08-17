@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Magnet Physics Arena — Human vs Gemini AI</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- MASTER CONTAINER -->
+    <div id="game-container">
+        
+        <!-- 1. CANVAS VIEWPORT -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- 2. GAMEPLAY HUD OVERLAY -->
+        <div id="game-hud" class="hud-layer hidden">
+            <!-- Top Bar: Player Badges & Score -->
+            <header class="hud-top-bar">
+                <!-- Player 1 (Human - Blue) -->
+                <div class="player-badge p1-badge" id="hud-p1">
+                    <img src="ui/player_panel/player1_panel.png" alt="Player 1" class="badge-bg" onerror="this.style.display='none'">
+                    <div class="badge-content">
+                        <span class="player-name">Player 1</span>
+                        <span class="player-score" id="score-p1">0</span>
+                    </div>
+                </div>
+
+                <!-- Turn Indicator Card -->
+                <div class="turn-indicator" id="hud-turn">
+                    <img src="ui/turn_indicator/your_turn.png" alt="Turn" class="turn-bg" onerror="this.style.display='none'">
+                    <span id="turn-text">YOUR TURN</span>
+                </div>
+
+                <!-- Player 2 (Gemini AI - Red) -->
+                <div class="player-badge p2-badge" id="hud-p2">
+                    <img src="ui/player_panel/player2_panel.png" alt="Gemini AI" class="badge-bg" onerror="this.style.display='none'">
+                    <div class="badge-content">
+                        <span class="player-name" id="p2-name-label">Gemini AI</span>
+                        <span class="player-score" id="score-p2">0</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Floating Milestone Achievement Toast Banner -->
+            <div id="milestone-toast-banner" class="milestone-toast hidden">
+                <span id="milestone-toast-text">10 POINTS MILESTONE ACHIEVED!</span>
+            </div>
+
+            <!-- Bottom Action Controls -->
+            <footer class="hud-bottom-bar">
+                <button id="btn-pause-game" class="icon-btn" title="Pause Game">
+                    <img src="ui/buttons/pause.png" alt="Pause" onerror="this.style.display='none'">
+                </button>
+
+                <div id="aim-indicator-box" class="aim-hint">
+                    <span id="aim-hint-text">Drag from your side & release to launch</span>
+                </div>
+
+                <button id="btn-open-settings" class="icon-btn" title="Open Settings">
+                    <img src="ui/buttons/settings.png" alt="Settings" onerror="this.style.display='none'">
+                </button>
+            </footer>
+        </div>
+
+        <!-- 3. MAIN MENU OVERLAY -->
+        <div id="main-menu" class="modal-overlay">
+            <div class="menu-card glass-panel">
+                <h1 class="game-title">MAGNET ARENA</h1>
+                <p class="game-subtitle">Real Dipole Physics • Human vs Gemini AI</p>
+
+                <div class="menu-button-group">
+                    <button id="btn-start-game" class="menu-btn primary-btn">
+                        <img src="ui/buttons/play.png" alt="Play" onerror="this.style.display='none'">
+                        <span>PLAY GAME</span>
+                    </button>
+                    <button id="btn-how-to-play" class="menu-btn secondary-btn">
+                        <img src="ui/buttons/how_to_play.png" alt="How to play" onerror="this.style.display='none'">
+                        <span>HOW TO PLAY</span>
+                    </button>
+                    <button id="btn-menu-settings" class="menu-btn secondary-btn">
+                        <img src="ui/buttons/settings.png" alt="Settings" onerror="this.style.display='none'">
+                        <span>AI & SETTINGS</span>
+                    </button>
+                </div>
+
+                <div class="connection-status-pill" id="menu-ai-status">
+                    <span class="status-dot offline"></span>
+                    <span id="ai-status-label">AI Mode: Local Heuristic (No Key)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. HOW TO PLAY MODAL -->
+        <div id="how-to-play-modal" class="modal-overlay hidden">
+            <div class="modal-card glass-panel">
+                <div class="modal-header">
+                    <h2>How To Play</h2>
+                    <button id="btn-close-rules" class="close-btn">&times;</button>
+                </div>
+                <div class="rules-body">
+                    <div class="rule-item">
+                        <strong>1. 50-Point Match Target & Milestones:</strong>
+                        <p>First player to reach <b>50 Points</b> wins! Milestone achievements unlock every <b>10 Points</b> (10, 20, 30, 40, 50).</p>
+                    </div>
+                    <div class="rule-item">
+                        <strong>2. Real Magnetic Dipoles:</strong>
+                        <p>Opposite poles (North &harr; South) pull together; like poles repel. Rotational torque forces magnets to snap and align.</p>
+                    </div>
+                    <div class="rule-item">
+                        <strong>3. Slingshot Launch Controls:</strong>
+                        <p>Touch your blue magnet, drag backwards, and release to shoot toward the center objective target circle.</p>
+                    </div>
+                    <div class="rule-item">
+                        <strong>4. Strict Foul Rules:</strong>
+                        <p>Striking a joined/snapped magnet pair is an <b>INVALID STRIKE / FOUL</b>! High-speed wall slams without controlling the center ring forfeit points.</p>
+                    </div>
+                </div>
+                <button id="btn-rules-back" class="menu-btn secondary-btn full-width">
+                    <img src="ui/buttons/back.png" alt="Back" onerror="this.style.display='none'">
+                    <span>GOT IT</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 5. ROUND RESULT / GAME OVER MODAL -->
+        <div id="game-over-modal" class="modal-overlay hidden">
+            <div class="modal-card result-panel glass-panel">
+                <img id="result-banner" src="ui/win_lose/you_win.png" alt="Round Result" class="result-banner-img" onerror="this.style.display='none'">
+                <h3 id="result-title">ROUND WON</h3>
+                <p id="result-desc">Decisive magnetic field control!</p>
+                <div class="result-scores">
+                    <span id="final-p1-score">P1: 0</span>
+                    <span class="score-divider">•</span>
+                    <span id="final-p2-score">AI: 0</span>
+                </div>
+                <div class="result-buttons">
+                    <button id="btn-next-round" class="menu-btn primary-btn">
+                        <img src="ui/buttons/play.png" alt="Next" onerror="this.style.display='none'">
+                        <span>NEXT ROUND</span>
+                    </button>
+                    <button id="btn-return-menu" class="menu-btn secondary-btn">
+                        <img src="ui/buttons/back.png" alt="Menu" onerror="this.style.display='none'">
+                        <span>MAIN MENU</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. RIGHT-HAND SLIDER SETTINGS DRAWER -->
+        <div id="settings-drawer-backdrop" class="drawer-backdrop hidden"></div>
+        <aside id="settings-drawer" class="drawer-panel">
+            <div class="drawer-header">
+                <h3>Settings & AI Config</h3>
+                <button id="btn-close-drawer" class="close-btn">&times;</button>
+            </div>
+
+            <div class="drawer-content">
+                <!-- Section A: Google Gemini AI -->
+                <section class="drawer-section">
+                    <div class="section-title">
+                        <img src="ui/buttons/vs_ai.png" alt="Robot" class="section-icon" onerror="this.style.display='none'">
+                        <span>Google Gemini AI</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gemini-api-key">Gemini API Key</label>
+                        <input type="password" id="gemini-api-key" placeholder="Enter API Key (AIzaSy...)" autocomplete="off">
+                    </div>
+
+                    <button id="btn-fetch-models" class="drawer-action-btn">
+                        <span>Fetch Live Models</span>
+                    </button>
+
+                    <div class="form-group">
+                        <label for="gemini-model-select">Active Model</label>
+                        <select id="gemini-model-select">
+                            <option value="local-fallback">Local Physical Heuristic (Offline)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ai-difficulty">AI Reasoning Level</label>
+                        <select id="ai-difficulty">
+                            <option value="easy">Easy (Direct Vector)</option>
+                            <option value="medium" selected>Medium (Dipole Torque Aware)</option>
+                            <option value="hard">Hard (Full Trajectory Predictive)</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Section B: Audio & Haptics -->
+                <section class="drawer-section">
+                    <div class="section-title">
+                        <img src="ui/buttons/sound.png" alt="Audio" class="section-icon" onerror="this.style.display='none'">
+                        <span>Audio & Feedback</span>
+                    </div>
+
+                    <div class="toggle-row">
+                        <span>Sound FX</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-sfx" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <span>Haptic Vibration</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-haptics" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Section C: Physics & Visuals -->
+                <section class="drawer-section">
+                    <div class="section-title">
+                        <span>Visuals & Debug</span>
+                    </div>
+
+                    <div class="toggle-row">
+                        <span>Show Magnetic Field</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-fields" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-row">
+                        <span>Physics Debug Vectors</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-debug">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </section>
+
+                <div class="drawer-footer">
+                    <button id="btn-save-settings" class="menu-btn primary-btn full-width">SAVE & CLOSE</button>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- JAVASCRIPT MODULE IMPORTS IN DEPENDENCY ORDER -->
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/physics/PhysicsWorld.js"></script>
+    <script src="js/physics/MagnetBody.js"></script>
+    <script src="js/physics/MagneticForce.js"></script>
+    <script src="js/physics/Collision.js"></script>
+    <script src="js/ai/GeminiClient.js"></script>
+    <script src="js/ai/HeuristicFallback.js"></script>
+    <script src="js/game/GameState.js"></script>
+    <script src="js/game/TurnManager.js"></script>
+    <script src="js/game/InputController.js"></script>
+    <script src="js/graphics/Renderer.js"></script>
+    <script src="js/graphics/AssetLoader.js"></script>
+    <script src="js/graphics/EffectPool.js"></script>
+    <script src="js/audio/SoundManager.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
